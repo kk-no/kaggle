@@ -39,6 +39,7 @@ train["Embarked"][train["Embarked"] == "Q"] = 2
 # print(missing_table(train))
 
 test["Age"] = test["Age"].fillna(test["Age"].median())
+test["Fare"][test["Fare"] == 0] = test["Fare"].median()
 test["Embarked"] = test["Embarked"].fillna("S")
 
 test["Sex"][test["Sex"] == "male"] = 0
@@ -59,10 +60,12 @@ train_features = train[["Pclass", "Sex", "Age", "Fare", "SibSp", "Parch", "Embar
 test_features = test[["Pclass", "Sex", "Age", "Fare", "SibSp", "Parch", "Embarked"]].values
 
 # 7 75%
+# 9 76%
 # 10 76%
+# 11 70%
 # 13 71%
 # 21 70%
-decision_tree = tree.DecisionTreeClassifier(max_depth=13, min_samples_split=5, random_state=0)
+decision_tree = tree.DecisionTreeClassifier(max_depth=10, min_samples_split=5, random_state=0)
 decision_tree = decision_tree.fit(train_features, target)
 predicted_label  = decision_tree.predict(test_features)
 # for depth in range(1, 36):
