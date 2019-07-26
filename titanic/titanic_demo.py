@@ -3,15 +3,13 @@ import numpy as np
 from sklearn import tree
 from sklearn.metrics import accuracy_score
 from datetime import datetime
+import random
 
-# titanic
-# Decistion tree
+# titanic_demo
+# demo file
 
 # Data Column
 # PassengerId Survived Pclass Name Sex Age SibSp Parch Ticket Fare Cabin Embarked
-
-# 20190724 71%
-# 20190725 76%
 
 def missing_table(df: pd.DataFrame):
     null_val = df.isnull().sum()
@@ -22,22 +20,20 @@ def missing_table(df: pd.DataFrame):
     )
     return missing_table_len_columns
 
+# 読込
 train: pd.DataFrame = pd.read_csv("csv/train.csv")
 test: pd.DataFrame = pd.read_csv("csv/test.csv")
 
+# 前処理
 train["Age"] = train["Age"].fillna(train["Age"].median())
+train.Fare[train.Fare == 0] = train.Fare.median()
 train["Embarked"] = train["Embarked"].fillna("S")
 
-train["Sex"][train["Sex"] == "male"] = 0
-train["Sex"][train["Sex"] == "female"] = 1
-train["Embarked"][train["Embarked"] == "S"] = 0
-train["Embarked"][train["Embarked"] == "C"] = 1
-train["Embarked"][train["Embarked"] == "Q"] = 2
-
-# print(train.shape)
-# print(train.head())
-# print(train.describe())
-# print(missing_table(train))
+train.Sex[train.Sex == "male"] = 0
+train.Sex[train.Sex == "female"] = 1
+train.Embarked[train.Embarked == "S"] = 0
+train.Embarked[train.Embarked == "C"] = 1
+train.Embarked[train.Embarked == "Q"] = 2
 
 test["Age"] = test["Age"].fillna(test["Age"].median())
 test["Fare"][test["Fare"] == 0] = test["Fare"].median()
@@ -50,11 +46,6 @@ test["Embarked"][test["Embarked"] == "C"] = 1
 test["Embarked"][test["Embarked"] == "Q"] = 2
 test.Fare[152] = test.Fare.median()
 
-# print(test.shape)
-# print(test.head())
-# print(test.describe())
-# print(missing_table(test))
-
 target = train["Survived"].values
 train_features = train[["Pclass", "Sex", "Age", "Fare", "SibSp", "Parch", "Embarked"]].values
 test_features = test[["Pclass", "Sex", "Age", "Fare", "SibSp", "Parch", "Embarked"]].values
@@ -66,20 +57,20 @@ test_features = test[["Pclass", "Sex", "Age", "Fare", "SibSp", "Parch", "Embarke
 # 11 70%
 # 13 71%
 # 21 70%
+# decision_tree = tree.DecisionTreeClassifier(max_depth=10, min_samples_split=5, random_state=0)
+# decision_tree = decision_tree.fit(train_features, target)
+# predicted_label  = decision_tree.predict(test_features)
+for i in range(2, 15):
+    depth = 10
+    # depth = random.randint(1, 10)
+    min_split = i
+    # min_split = random.randint(2, 15)
+    decision_tree = tree.DecisionTreeClassifier(max_depth=depth, min_samples_split=min_split, random_state=1)
+    decision_tree = decision_tree.fit(train_features, target)
+    predicted_label  = decision_tree.predict(train_features)
+    score = accuracy_score(target, predicted_label)
+    print("{0} depth={1} min_split={2}: {3}".format(i, depth, min_split, score))
 
-# min_sample_split rate
-# 2 75%
-# 5 76%
-decision_tree = tree.DecisionTreeClassifier(max_depth=10, min_samples_split=3, random_state=0)
-decision_tree = decision_tree.fit(train_features, target)
-predicted_label  = decision_tree.predict(test_features)
-# for depth in range(1, 36):
-#     decision_tree = tree.DecisionTreeClassifier(max_depth=depth, min_samples_split=5, random_state=1)
-#     decision_tree = decision_tree.fit(train_features, target)
-#     predicted_label  = decision_tree.predict(train_features)
-#     score = accuracy_score(target, predicted_label)
-#     print("depth={0}: {1}".format(depth, score))
-
-PassengerId = np.array(test["PassengerId"]).astype(int)
-solution: pd.DataFrame = pd.DataFrame(predicted_label, PassengerId, columns = ["Survived"])
-solution.to_csv("{0:%Y%m%d%H%M%S}.csv".format(datetime.now()), index_label=["PassengerId"])
+# PassengerId = np.array(test["PassengerId"]).astype(int)
+# solution: pd.DataFrame = pd.DataFrame(predicted_label, PassengerId, columns = ["Survived"])
+# solution.to_csv("{0:%Y%m%d%H%M%S}.csv".format(datetime.now()), index_label=["PassengerId"])
