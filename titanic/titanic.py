@@ -5,6 +5,9 @@ from sklearn.metrics import accuracy_score
 from datetime import datetime
 
 # titanic
+# Decistion tree
+
+# Data Column
 # PassengerId Survived Pclass Name Sex Age SibSp Parch Ticket Fare Cabin Embarked
 
 # 20190724 71%
