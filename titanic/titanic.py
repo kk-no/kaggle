@@ -4,8 +4,11 @@ from sklearn import tree
 from sklearn.metrics import accuracy_score
 from datetime import datetime
 
-# 20190723 71%
-# 20190724 76%
+# titanic
+# PassengerId Survived Pclass Name Sex Age SibSp Parch Ticket Fare Cabin Embarked
+
+# 20190724 71%
+# 20190725 76%
 
 def missing_table(df: pd.DataFrame):
     null_val = df.isnull().sum()
@@ -19,10 +22,6 @@ def missing_table(df: pd.DataFrame):
 train: pd.DataFrame = pd.read_csv("csv/train.csv")
 test: pd.DataFrame = pd.read_csv("csv/test.csv")
 
-# PassengerId Survived Pclass Name Sex Age SibSp Parch Ticket Fare Cabin Embarked
-# print(train.head(10))
-# exit()
-
 train["Age"] = train["Age"].fillna(train["Age"].median())
 train["Embarked"] = train["Embarked"].fillna("S")
 
@@ -32,7 +31,6 @@ train["Embarked"][train["Embarked"] == "S"] = 0
 train["Embarked"][train["Embarked"] == "C"] = 1
 train["Embarked"][train["Embarked"] == "Q"] = 2
 
-# print("##### train #####")
 # print(train.shape)
 # print(train.head())
 # print(train.describe())
@@ -49,7 +47,6 @@ test["Embarked"][test["Embarked"] == "C"] = 1
 test["Embarked"][test["Embarked"] == "Q"] = 2
 test.Fare[152] = test.Fare.median()
 
-# print("##### test #####")
 # print(test.shape)
 # print(test.head())
 # print(test.describe())
@@ -59,6 +56,7 @@ target = train["Survived"].values
 train_features = train[["Pclass", "Sex", "Age", "Fare", "SibSp", "Parch", "Embarked"]].values
 test_features = test[["Pclass", "Sex", "Age", "Fare", "SibSp", "Parch", "Embarked"]].values
 
+# max_depth rate
 # 7 75%
 # 9 76%
 # 10 76%
