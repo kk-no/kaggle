@@ -1,6 +1,9 @@
 # kaggle
 kaggle script
 
-##platform
+## platform
 - Windows 10 Home 64bit
-- Python 3
+- Python 3.7.1
+
+## competitions
+- titanic
