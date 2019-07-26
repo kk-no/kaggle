@@ -69,8 +69,10 @@ test_features = test[["Pclass", "Sex", "Age", "Fare", "SibSp", "Parch", "Embarke
 
 # min_sample_split rate
 # 2 75%
+# 3 74%
+# 4 75%
 # 5 76%
-decision_tree = tree.DecisionTreeClassifier(max_depth=10, min_samples_split=3, random_state=0)
+decision_tree = tree.DecisionTreeClassifier(max_depth=10, min_samples_split=4, random_state=0)
 decision_tree = decision_tree.fit(train_features, target)
 predicted_label  = decision_tree.predict(test_features)
 # for depth in range(1, 36):
