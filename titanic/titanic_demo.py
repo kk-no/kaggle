@@ -23,13 +23,15 @@ def missing_table(df: pd.DataFrame):
     return missing_table_len_columns
 
 # log
-# {'max_depth': 15, 'min_samples_split': 30, 'n_estimators': 25, 'random_state': 0}
+# {'max_depth': 15, 'min_samples_split': 30, 'n_estimators': 25, 'random_state': 0} 77.0%
+# {'max_depth': 12, 'min_samples_split': 19, 'n_estimators': 19, 'random_state': 0} 76.0%
+# {'max_depth': 10, 'min_samples_split': 25, 'n_estimators': 15, 'random_state': 0} 78.9%
 def grid_search_forest(train_data, test_data):
     params = {
-        "n_estimators": range(5, 50),
+        "n_estimators": [5, 10, 15, 20, 25, 30],
         "random_state": [0],
-        "min_samples_split": range(5, 50),
-        "max_depth": range(10, 30)
+        "min_samples_split": [5, 10, 15, 20, 25, 30],
+        "max_depth": [5, 10, 15, 20, 25, 30]
     }
 
     grid_search = GridSearchCV(RandomForestClassifier(), param_grid=params)
@@ -88,11 +90,11 @@ y_train = train[["Survived"]].values
 # 学習データ(test)
 x_test = test[["Sex", "Age", "SibSp", "Parch", "Fare", "Embarked", "Family", "IsAlone"]].values
 
-grid_search_forest(x_train, y_train.ravel())
-exit()
+# grid_search_forest(x_train, y_train.ravel())
+# exit()
 
 # 決定木作成
-forest = RandomForestClassifier(max_depth=15, min_samples_split=30, n_estimators=25, random_state=0)
+forest = RandomForestClassifier(max_depth=10, min_samples_split=25, n_estimators=15, random_state=0)
 forest.fit(x_train, y_train.ravel())
 # 予測
 predicted_label = forest.predict(x_test)
