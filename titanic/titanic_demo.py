@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn import tree
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import GridSearchCV
 # from sklearn.metrics import accuracy_score
 from datetime import datetime
 import random
@@ -20,6 +21,22 @@ def missing_table(df: pd.DataFrame):
         columns = {0: "欠損数", 1: "%"}
     )
     return missing_table_len_columns
+
+# log
+# {'max_depth': 15, 'min_samples_split': 30, 'n_estimators': 25, 'random_state': 0}
+def grid_search_forest(train_data, test_data):
+    params = {
+        "n_estimators": range(5, 50),
+        "random_state": [0],
+        "min_samples_split": range(5, 50),
+        "max_depth": range(10, 30)
+    }
+
+    grid_search = GridSearchCV(RandomForestClassifier(), param_grid=params)
+    grid_search.fit(train_data, test_data)
+    
+    print(grid_search.best_score_)
+    print(grid_search.best_params_)
 
 # 読込
 train: pd.DataFrame = pd.read_csv("csv/train.csv")
@@ -71,8 +88,11 @@ y_train = train[["Survived"]].values
 # 学習データ(test)
 x_test = test[["Sex", "Age", "SibSp", "Parch", "Fare", "Embarked", "Family", "IsAlone"]].values
 
+grid_search_forest(x_train, y_train.ravel())
+exit()
+
 # 決定木作成
-forest = RandomForestClassifier()
+forest = RandomForestClassifier(max_depth=15, min_samples_split=30, n_estimators=25, random_state=0)
 forest.fit(x_train, y_train.ravel())
 # 予測
 predicted_label = forest.predict(x_test)
