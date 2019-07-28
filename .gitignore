@@ -12,6 +12,9 @@ __pycache__/
 # txt
 *.txt
 
+# json
+*.json
+
 # Distribution / packaging
 .Python
 build/
