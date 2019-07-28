@@ -9,6 +9,9 @@ __pycache__/
 # csv
 *.csv
 
+# txt
+*.txt
+
 # Distribution / packaging
 .Python
 build/
