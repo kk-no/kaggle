@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
 from datetime import datetime
+from sklearn.preprocessing import LabelEncoder
+from sklearn.ensemble import RandomForestRegressor
 from matplotlib import pyplot as plt
-import seaborn as sns
-
 
 # house
 # 
@@ -30,61 +30,93 @@ import seaborn as sns
 # SalePrice
 
 # pandas option
-pd.options.display.max_rows = 20
+pd.options.display.max_rows = 100
 pd.options.display.max_columns = 100
 
 # 読込
 train: pd.DataFrame = pd.read_csv("csv/train.csv")
 test: pd.DataFrame = pd.read_csv("csv/test.csv")
 
-# 学習データとテストデータのマージ
-train['WhatIsData'] = 'Train'
-test['WhatIsData'] = 'Test'
-test['SalePrice'] = 9999999999
-alldata = pd.concat([train,test], sort=False, axis=0).reset_index(drop=True)
+# 学習データ欠損列
+train_no_col_list = train.isnull().sum()[train.isnull().sum() > 0].index.tolist()
+# テストデータ欠損列
+test_no_col_list = test.isnull().sum()[test.isnull().sum() > 0].index.tolist()
+# print(train[train_no_col_list].dtypes.sort_values())
+# print(test[test_no_col_list].dtypes.sort_values())
 
-# print(train.info())
+# 学習データ数値変数欠損列
+train_no_float_cols = train[train_no_col_list].dtypes[train[train_no_col_list].dtypes == "float64"].index.tolist()
+# 学習データカテゴリカル変数欠損列
+train_no_obj_cols = train[train_no_col_list].dtypes[train[train_no_col_list].dtypes == "object"].index.tolist()
 
-# 欠損状況
-# print(train.isnull().sum()[train.isnull().sum() > 0])
-# print(test.isnull().sum()[test.isnull().sum() > 0])
+# テストデータ数値変数欠損列
+test_no_float_cols = test[test_no_col_list].dtypes[test[test_no_col_list].dtypes == "float64"].index.tolist()
+# テストデータカテゴリカル変数欠損列
+test_no_obj_cols = test[test_no_col_list].dtypes[test[test_no_col_list].dtypes == "object"].index.tolist()
 
-no_col_list = alldata.isnull().sum()[alldata.isnull().sum() > 0].index.tolist()
-# print(alldata[no_col_list].dtypes.sort_values())
+# print(train_no_float_cols)
+# print(train_no_obj_cols)
+# print(test_no_float_cols)
+# print(test_no_obj_cols)
 
-# float型欠損値
-no_float_list = alldata[no_col_list].dtypes[alldata[no_col_list].dtypes == "float64"].index.tolist()
-# object型欠損値
-no_obj_list = alldata[no_col_list].dtypes[alldata[no_col_list].dtypes == "object"].index.tolist()
-
-# 欠損値埋め
-for no_float_col in no_float_list:
+# 学習データ欠損値埋め
+for train_no_float_col in train_no_float_cols:
     # 数値変数
-    alldata.loc[alldata[no_float_col].isnull(), no_float_col] = 0.0
-for no_obj_col in no_obj_list:
+    train.loc[train[train_no_float_col].isnull(), train_no_float_col] = 0.0
+
+for train_no_obj_col in train_no_obj_cols:
     # カテゴリカル変数
-    alldata.loc[alldata[no_obj_col].isnull(), no_obj_col] = "NA"
+    train.loc[train[train_no_obj_col].isnull(), train_no_obj_col] = "NA"
 
 # 確認
-# print(alldata.isnull().sum()[alldata.isnull().sum() > 0])
-# exit()
+# print(train.isnull().sum()[train.isnull().sum() > 0])
 
-# 特徴量リスト化
-cat_cols = alldata.dtypes[alldata.dtypes == "object"].index.tolist()
-num_cols = alldata.dtypes[alldata.dtypes != "object"].index.tolist()
+# テストデータ欠損値埋め
+for test_no_float_col in test_no_float_cols:
+    # 数値変数
+    test.loc[test[test_no_float_col].isnull(), test_no_float_col] = 0.0
 
-# 分割リスト
-other_cols = [
-    "Id",
-    "WhatIsData"
-]
+for test_no_obj_col in test_no_obj_cols:
+    # カテゴリカル変数
+    test.loc[test[test_no_obj_col].isnull(), test_no_obj_col] = "NA"
 
-# 不要列削除
-cat_cols.remove("WhatIsData")
-num_cols.remove("Id")
+# 確認
+# print(test.isnull().sum()[test.isnull().sum() > 0])
 
 # カテゴリカル変数のダミー化
-dummy_cat = pd.get_dummies(alldata[cat_cols])
+for i in range(train.shape[1]):
+    if train.iloc[:,i].dtypes == "object":
+        lbl = LabelEncoder()
+        # ラベル抽出
+        lbl.fit(list(train.iloc[:,i].values) + list(test.iloc[:,i].values))
+        # 学習データ変換
+        train.iloc[:,i] = lbl.transform(list(train.iloc[:,i].values))
+        # テストデータ置換
+        test.iloc[:,i] = lbl.transform(list(test.iloc[:,i].values))
 
-# データ統合
-all_data = pd.concat([alldata[other_cols], alldata[num_cols], dummy_cat], sort=False, axis=1)
+# print(train.info())
+# print(test.info())
+
+# 学習データ(train)
+x_train = train.drop(["Id", "SalePrice"], axis=1)
+# 正解データ(train)
+y_train = train["SalePrice"]
+
+# 予測対象
+x_test = test.drop(["Id"], axis=1)
+
+# 決定木作成
+forest = RandomForestRegressor(n_estimators=100, random_state=0)
+forest.fit(x_train, y_train)
+
+# 予測
+predicted_label = forest.predict(x_test)
+
+# print(predicted_label)
+
+# ID列抽出
+Id = np.array(test["Id"]).astype(int)
+# データフレーム作成
+solution = pd.DataFrame(predicted_label, Id, columns = ["SalePrice"])
+# 出力
+solution.to_csv("{0:%Y%m%d%H%M%S}.csv".format(datetime.now()), index_label=["Id"])
