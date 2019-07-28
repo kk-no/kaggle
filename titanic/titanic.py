@@ -1,87 +1,65 @@
 import pandas as pd
 import numpy as np
-from sklearn import tree
-from sklearn.metrics import accuracy_score
+from sklearn.ensemble import RandomForestClassifier
 from datetime import datetime
 
 # titanic
-# Decistion tree
+# RandomForest 
 
 # Data Column
 # PassengerId Survived Pclass Name Sex Age SibSp Parch Ticket Fare Cabin Embarked
 
 # 20190724 71%
 # 20190725 76%
+# 20190727 78.9%
 
-def missing_table(df: pd.DataFrame):
-    null_val = df.isnull().sum()
-    percent = 100 * df.isnull().sum() / len(df)
-    missing_table = pd.concat([null_val, percent], axis=1)
-    missing_table_len_columns = missing_table.rename(
-        columns = {0: "欠損数", 1: "%"}
-    )
-    return missing_table_len_columns
-
+# 読込
 train: pd.DataFrame = pd.read_csv("csv/train.csv")
 test: pd.DataFrame = pd.read_csv("csv/test.csv")
 
-train["Age"] = train["Age"].fillna(train["Age"].median())
-train["Embarked"] = train["Embarked"].fillna("S")
+# イテレータ
+train_ = [train]
+test_ = [test]
 
-train["Sex"][train["Sex"] == "male"] = 0
-train["Sex"][train["Sex"] == "female"] = 1
-train["Embarked"][train["Embarked"] == "S"] = 0
-train["Embarked"][train["Embarked"] == "C"] = 1
-train["Embarked"][train["Embarked"] == "Q"] = 2
+# 前処理
+train = train.replace("male", 0).replace("female", 1).replace("S", 0).replace("C", 1).replace("Q", 2)
+test = test.replace("male", 0).replace("female", 1).replace("S", 0).replace("C", 1).replace("Q", 2)
 
-# print(train.shape)
-# print(train.head())
-# print(train.describe())
-# print(missing_table(train))
+# 欠損値埋め
+train["Age"].fillna(train.Age.mean(), inplace=True)
+train["Embarked"].fillna(train.Embarked.mean(), inplace=True)
 
-test["Age"] = test["Age"].fillna(test["Age"].median())
-test["Fare"][test["Fare"] == 0] = test["Fare"].median()
-test["Embarked"] = test["Embarked"].fillna("S")
+test["Age"].fillna(test.Age.mean(), inplace=True)
+test["Fare"].fillna(test.Fare.mean(), inplace=True)
 
-test["Sex"][test["Sex"] == "male"] = 0
-test["Sex"][test["Sex"] == "female"] = 1
-test["Embarked"][test["Embarked"] == "S"] = 0
-test["Embarked"][test["Embarked"] == "C"] = 1
-test["Embarked"][test["Embarked"] == "Q"] = 2
-test.Fare[152] = test.Fare.median()
+# 変数追加
+train["Family"] = train["SibSp"] + train["Parch"] + 1
+for tr in train_:
+    train["IsAlone"] = 0
+    train.loc[train["Family"] == 1, "IsAlone"] = 1
 
-# print(test.shape)
-# print(test.head())
-# print(test.describe())
-# print(missing_table(test))
+test["Family"] = test["SibSp"] + test["Parch"] + 1
+for te in test_:
+    test["IsAlone"] = 0
+    test.loc[test["Family"] == 1, "IsAlone"] = 1
 
-target = train["Survived"].values
-train_features = train[["Pclass", "Sex", "Age", "Fare", "SibSp", "Parch", "Embarked"]].values
-test_features = test[["Pclass", "Sex", "Age", "Fare", "SibSp", "Parch", "Embarked"]].values
+# 学習データ(train)
+x_train = train[["Sex", "Age", "SibSp", "Parch", "Fare", "Embarked", "Family", "IsAlone"]].values
+# 正解データ(train)
+y_train = train[["Survived"]].values
 
-# max_depth rate
-# 7 75%
-# 9 76%
-# 10 76%
-# 11 70%
-# 13 71%
-# 21 70%
+# 学習データ(test)
+x_test = test[["Sex", "Age", "SibSp", "Parch", "Fare", "Embarked", "Family", "IsAlone"]].values
 
-# min_sample_split rate
-# 2 75%
-# 3 74%
-# 4 75%
-# 5 76%
-decision_tree = tree.DecisionTreeClassifier(max_depth=10, min_samples_split=4, random_state=0)
-decision_tree = decision_tree.fit(train_features, target)
-predicted_label  = decision_tree.predict(test_features)
-# for depth in range(1, 36):
-#     decision_tree = tree.DecisionTreeClassifier(max_depth=depth, min_samples_split=5, random_state=1)
-#     decision_tree = decision_tree.fit(train_features, target)
-#     predicted_label  = decision_tree.predict(train_features)
-#     score = accuracy_score(target, predicted_label)
-#     print("depth={0}: {1}".format(depth, score))
+# 決定木作成
+forest = RandomForestClassifier(max_depth=10, min_samples_split=25, n_estimators=15, random_state=0)
+forest.fit(x_train, y_train.ravel())
+# 予測
+predicted_label = forest.predict(x_test)
 
-PassengerId = np.array(test["PassengerId"]).astype(int)
-solution: pd.DataFrame = pd.DataFrame(predicted_label, PassengerId, columns = ["Survived"])
+# 列抽出
+passengerId = np.array(test["PassengerId"]).astype(int)
+# 整形
+solution: pd.DataFrame = pd.DataFrame(predicted_label, passengerId, columns = ["Survived"])
+# 出力
 solution.to_csv("{0:%Y%m%d%H%M%S}.csv".format(datetime.now()), index_label=["PassengerId"])
