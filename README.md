@@ -7,3 +7,4 @@ kaggle script
 
 ## competitions
 - titanic
+- house
