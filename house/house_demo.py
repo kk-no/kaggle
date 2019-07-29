@@ -4,7 +4,7 @@ from datetime import datetime
 from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import GridSearchCV
-from matplotlib import pyplot as plt
+# from matplotlib import pyplot as plt
 
 # house demo file
 # RandomForestRegressor
@@ -121,11 +121,11 @@ y_train = train["SalePrice"]
 x_test = test.drop(["Id"], axis=1)
 
 # GridSearch
-grid_search_forest(x_train, y_train)
-exit()
+# grid_search_forest(x_train, y_train)
+# exit()
 
 # 決定木作成
-forest = RandomForestRegressor(max_depth=15, min_samples_split=5, n_estimators=25, random_state=0)
+forest = RandomForestRegressor(max_depth=20, min_samples_split=5, n_estimators=40, random_state=0)
 forest.fit(x_train, y_train)
 
 # 予測
