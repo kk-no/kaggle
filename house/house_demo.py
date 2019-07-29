@@ -3,10 +3,11 @@ import numpy as np
 from datetime import datetime
 from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import GridSearchCV
 from matplotlib import pyplot as plt
 
-# house
-# 
+# house demo file
+# RandomForestRegressor
 
 # 1460 record 
 
@@ -28,6 +29,10 @@ from matplotlib import pyplot as plt
 # ScreenPorch PoolArea PoolQC Fence MiscFeature 
 # MiscVal MoSold YrSold SaleType SaleCondition 
 # SalePrice
+
+# grind search
+def grid_search_forest():
+    return ""
 
 # pandas option
 pd.options.display.max_rows = 100
