@@ -30,9 +30,19 @@ from matplotlib import pyplot as plt
 # MiscVal MoSold YrSold SaleType SaleCondition 
 # SalePrice
 
-# grind search
-def grid_search_forest():
-    return ""
+# grid search
+def grid_search_forest(train_data, test_data):
+    params = {
+        "n_estimators": [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+        "random_state": [0],
+        "min_samples_split": [5, 10, 15, 20, 25, 30, 35, 40, 45, 50],
+        "max_depth": [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
+    }
+    grid_search = GridSearchCV(RandomForestRegressor(), param_grid=params)
+    grid_search.fit(train_data, test_data)
+
+    print(grid_search.best_score_)
+    print(grid_search.best_params_)
 
 # pandas option
 pd.options.display.max_rows = 100
@@ -110,8 +120,12 @@ y_train = train["SalePrice"]
 # 予測対象
 x_test = test.drop(["Id"], axis=1)
 
+# GridSearch
+grid_search_forest(x_train, y_train)
+exit()
+
 # 決定木作成
-forest = RandomForestRegressor(n_estimators=100, random_state=0)
+forest = RandomForestRegressor(max_depth=15, min_samples_split=5, n_estimators=25, random_state=0)
 forest.fit(x_train, y_train)
 
 # 予測
