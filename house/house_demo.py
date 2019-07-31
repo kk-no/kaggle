@@ -125,7 +125,7 @@ x_test = test.drop(["Id"], axis=1)
 # exit()
 
 # 決定木作成
-forest = RandomForestRegressor(max_depth=20, min_samples_split=5, n_estimators=40, random_state=0)
+forest = RandomForestRegressor(max_depth=20, min_samples_split=5, n_estimators=100, random_state=0)
 forest.fit(x_train, y_train)
 
 # 予測
