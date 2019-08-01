@@ -4,7 +4,8 @@ from datetime import datetime
 from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import GridSearchCV
-# from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt
+import seaborn as sns
 
 # house demo file
 # RandomForestRegressor
@@ -31,7 +32,7 @@ from sklearn.model_selection import GridSearchCV
 # SalePrice
 
 # grid search
-def grid_search_forest(train_data, test_data):
+def grid_search_forest(train_data: pd.DataFrame, test_data: pd.DataFrame):
     params = {
         "n_estimators": [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
         "random_state": [0],
@@ -43,6 +44,23 @@ def grid_search_forest(train_data, test_data):
 
     print(grid_search.best_score_)
     print(grid_search.best_params_)
+
+# correlation check
+def check_correlation(train_data: pd.DataFrame):
+    cl = train_data.columns
+    co = train_data.corr()
+    heat = sns.heatmap(
+        co,
+        cbar=True,
+        square=True,
+        fmt=".2f",
+        annot_kws={'size': 15},
+        yticklabels=cl,
+        xticklabels=cl,
+        cmap='Accent'
+    )
+    plt.show()
+    exit()
 
 # pandas option
 pd.options.display.max_rows = 100
@@ -111,6 +129,9 @@ for i in range(train.shape[1]):
 
 # print(train.info())
 # print(test.info())
+
+# 相関チェック
+check_correlation(train)
 
 # 学習データ(train)
 x_train = train.drop(["Id", "SalePrice"], axis=1)
