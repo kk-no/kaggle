@@ -47,19 +47,25 @@ def grid_search_forest(train_data: pd.DataFrame, test_data: pd.DataFrame):
 
 # correlation check
 def check_correlation(train_data: pd.DataFrame):
-    cl = train_data.columns
+    # 基準とする相関係数
+    border = 0.5
+
+    # 相関係数の算出
     co = train_data.corr()
-    heat = sns.heatmap(
-        co,
-        cbar=True,
-        square=True,
-        fmt=".2f",
-        annot_kws={'size': 15},
-        yticklabels=cl,
-        xticklabels=cl,
-        cmap='Accent'
-    )
-    plt.show()
+    # cl = train_data.columns
+    # heat = sns.heatmap(
+    #     co,
+    #     cbar=True,
+    #     square=True,
+    #     fmt=".2f",
+    #     annot_kws={'size': 15},
+    #     yticklabels=cl,
+    #     xticklabels=cl,
+    #     cmap='Accent'
+    # )
+    # plt.show()
+    correlation_co: pd.DataFrame = co.loc[co["SalePrice"] > border]
+    print(correlation_co.index)
     exit()
 
 # pandas option
