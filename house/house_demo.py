@@ -48,7 +48,7 @@ def grid_search_forest(train_data: pd.DataFrame, test_data: pd.DataFrame):
 # correlation check
 def check_correlation(train_data: pd.DataFrame):
     # 基準とする相関係数
-    border = 0.5
+    border = 0.6
 
     # 相関係数の算出
     co = train_data.corr()
@@ -58,10 +58,10 @@ def check_correlation(train_data: pd.DataFrame):
     #     cbar=True,
     #     square=True,
     #     fmt=".2f",
-    #     annot_kws={'size': 15},
+    #     annot_kws={"size": 15},
     #     yticklabels=cl,
     #     xticklabels=cl,
-    #     cmap='Accent'
+    #     cmap="Accent"
     # )
     # plt.show()
     correlation_co: pd.DataFrame = co.loc[co["SalePrice"] > border]
@@ -137,15 +137,17 @@ for i in range(train.shape[1]):
 # print(test.info())
 
 # 相関チェック
-check_correlation(train)
+# check_correlation(train)
 
 # 学習データ(train)
 x_train = train.drop(["Id", "SalePrice"], axis=1)
+# x_train = train[["OverallQual", "TotalBsmtSF", "1stFlrSF", "GrLivArea", "GarageCars", "GarageArea"]]
 # 正解データ(train)
 y_train = train["SalePrice"]
 
 # 予測対象
 x_test = test.drop(["Id"], axis=1)
+# x_test = test[["OverallQual", "TotalBsmtSF", "1stFlrSF", "GrLivArea", "GarageCars", "GarageArea"]]
 
 # GridSearch
 # grid_search_forest(x_train, y_train)
