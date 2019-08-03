@@ -33,17 +33,25 @@ import seaborn as sns
 
 # grid search
 def grid_search_forest(train_data: pd.DataFrame, test_data: pd.DataFrame):
+    # hyper parameter
+    n_estimators = [100, 125, 150, 175, 200]
+    random_state = [0]
+    min_samples_split = [10, 20, 30, 40, 50]
+    max_depth = [10, 20, 30, 40, 50]
+
     params = {
-        "n_estimators": [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
-        "random_state": [0],
-        "min_samples_split": [5, 10, 15, 20, 25, 30, 35, 40, 45, 50],
-        "max_depth": [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
+        "n_estimators": n_estimators,
+        "random_state": random_state,
+        "min_samples_split": min_samples_split,
+        "max_depth": max_depth
     }
     grid_search = GridSearchCV(RandomForestRegressor(), param_grid=params)
     grid_search.fit(train_data, test_data)
 
     print(grid_search.best_score_)
     print(grid_search.best_params_)
+
+    exit()
 
 # correlation check
 def check_correlation(train_data: pd.DataFrame):
@@ -151,10 +159,9 @@ x_test = test.drop(["Id"], axis=1)
 
 # GridSearch
 # grid_search_forest(x_train, y_train)
-# exit()
 
 # 決定木作成
-forest = RandomForestRegressor(max_depth=20, min_samples_split=5, n_estimators=100, random_state=0)
+forest = RandomForestRegressor(max_depth=10, min_samples_split=10, n_estimators=175, random_state=0, n_jobs=2)
 forest.fit(x_train, y_train)
 
 # 予測
