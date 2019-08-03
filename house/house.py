@@ -4,11 +4,10 @@ from datetime import datetime
 from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import GridSearchCV
-from matplotlib import pyplot as plt
-import seaborn as sns
+import lightgbm as lgb
 
-# house demo file
-# RandomForestRegressor
+# house price
+# LightGBM
 
 # 1460 record 
 
@@ -31,55 +30,6 @@ import seaborn as sns
 # MiscVal MoSold YrSold SaleType SaleCondition 
 # SalePrice
 
-# grid search
-def grid_search_forest(train_data: pd.DataFrame, test_data: pd.DataFrame):
-    # hyper parameter
-    n_estimators = [100, 125, 150, 175, 200]
-    random_state = [0]
-    min_samples_split = [10, 20, 30, 40, 50]
-    max_depth = [10, 20, 30, 40, 50]
-
-    params = {
-        "n_estimators": n_estimators,
-        "random_state": random_state,
-        "min_samples_split": min_samples_split,
-        "max_depth": max_depth
-    }
-    grid_search = GridSearchCV(RandomForestRegressor(), param_grid=params)
-    grid_search.fit(train_data, test_data)
-
-    print(grid_search.best_score_)
-    print(grid_search.best_params_)
-
-    exit()
-
-# correlation check
-def check_correlation(train_data: pd.DataFrame):
-    # 基準とする相関係数
-    border = 0.6
-
-    # 相関係数の算出
-    co = train_data.corr()
-    # cl = train_data.columns
-    # heat = sns.heatmap(
-    #     co,
-    #     cbar=True,
-    #     square=True,
-    #     fmt=".2f",
-    #     annot_kws={"size": 15},
-    #     yticklabels=cl,
-    #     xticklabels=cl,
-    #     cmap="Accent"
-    # )
-    # plt.show()
-    correlation_co: pd.DataFrame = co.loc[co["SalePrice"] > border]
-    print(correlation_co.index)
-    exit()
-
-# pandas option
-pd.options.display.max_rows = 100
-pd.options.display.max_columns = 100
-
 # 読込
 train: pd.DataFrame = pd.read_csv("csv/train.csv")
 test: pd.DataFrame = pd.read_csv("csv/test.csv")
@@ -88,8 +38,6 @@ test: pd.DataFrame = pd.read_csv("csv/test.csv")
 train_no_col_list = train.isnull().sum()[train.isnull().sum() > 0].index.tolist()
 # テストデータ欠損列
 test_no_col_list = test.isnull().sum()[test.isnull().sum() > 0].index.tolist()
-# print(train[train_no_col_list].dtypes.sort_values())
-# print(test[test_no_col_list].dtypes.sort_values())
 
 # 学習データ数値変数欠損列
 train_no_float_cols = train[train_no_col_list].dtypes[train[train_no_col_list].dtypes == "float64"].index.tolist()
@@ -101,11 +49,6 @@ test_no_float_cols = test[test_no_col_list].dtypes[test[test_no_col_list].dtypes
 # テストデータカテゴリカル変数欠損列
 test_no_obj_cols = test[test_no_col_list].dtypes[test[test_no_col_list].dtypes == "object"].index.tolist()
 
-# print(train_no_float_cols)
-# print(train_no_obj_cols)
-# print(test_no_float_cols)
-# print(test_no_obj_cols)
-
 # 学習データ欠損値埋め
 for train_no_float_col in train_no_float_cols:
     # 数値変数
@@ -115,9 +58,6 @@ for train_no_obj_col in train_no_obj_cols:
     # カテゴリカル変数
     train.loc[train[train_no_obj_col].isnull(), train_no_obj_col] = "NA"
 
-# 確認
-# print(train.isnull().sum()[train.isnull().sum() > 0])
-
 # テストデータ欠損値埋め
 for test_no_float_col in test_no_float_cols:
     # 数値変数
@@ -126,9 +66,6 @@ for test_no_float_col in test_no_float_cols:
 for test_no_obj_col in test_no_obj_cols:
     # カテゴリカル変数
     test.loc[test[test_no_obj_col].isnull(), test_no_obj_col] = "NA"
-
-# 確認
-# print(test.isnull().sum()[test.isnull().sum() > 0])
 
 # カテゴリカル変数のダミー化
 for i in range(train.shape[1]):
@@ -141,33 +78,21 @@ for i in range(train.shape[1]):
         # テストデータ置換
         test.iloc[:,i] = lbl.transform(list(test.iloc[:,i].values))
 
-# print(train.info())
-# print(test.info())
-
-# 相関チェック
-# check_correlation(train)
-
 # 学習データ(train)
 x_train = train.drop(["Id", "SalePrice"], axis=1)
-# x_train = train[["OverallQual", "TotalBsmtSF", "1stFlrSF", "GrLivArea", "GarageCars", "GarageArea"]]
+
 # 正解データ(train)
 y_train = train["SalePrice"]
 
 # 予測対象
 x_test = test.drop(["Id"], axis=1)
-# x_test = test[["OverallQual", "TotalBsmtSF", "1stFlrSF", "GrLivArea", "GarageCars", "GarageArea"]]
 
-# GridSearch
-# grid_search_forest(x_train, y_train)
-
-# 決定木作成
-forest = RandomForestRegressor(max_depth=10, min_samples_split=10, n_estimators=175, random_state=0, n_jobs=2)
-forest.fit(x_train, y_train)
+# モデル作成(LightGBM)
+model = lgb.LGBMRegressor(random_state=0)
+model.fit(x_train, y_train)
 
 # 予測
-predicted_label = forest.predict(x_test)
-
-# print(predicted_label)
+predicted_label = model.predict(x_test)
 
 # ID列抽出
 Id = np.array(test["Id"]).astype(int)

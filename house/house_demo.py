@@ -4,6 +4,7 @@ from datetime import datetime
 from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import GridSearchCV
+import lightgbm as lgb
 from matplotlib import pyplot as plt
 import seaborn as sns
 
@@ -31,7 +32,7 @@ import seaborn as sns
 # MiscVal MoSold YrSold SaleType SaleCondition 
 # SalePrice
 
-# grid search
+# grid search RandomForestRegressor
 def grid_search_forest(train_data: pd.DataFrame, test_data: pd.DataFrame):
     # hyper parameter
     n_estimators = [100, 125, 150, 175, 200]
@@ -46,6 +47,27 @@ def grid_search_forest(train_data: pd.DataFrame, test_data: pd.DataFrame):
         "max_depth": max_depth
     }
     grid_search = GridSearchCV(RandomForestRegressor(), param_grid=params)
+    grid_search.fit(train_data, test_data)
+
+    print(grid_search.best_score_)
+    print(grid_search.best_params_)
+
+    exit()
+
+# grid search LightGBM
+def grid_search_lightGBM(train_data: pd.DataFrame, test_data: pd.DataFrame):
+    # hyper parameter
+    n_estimators = [100, 125, 150, 175, 200]
+    random_state = [0]
+    max_depth = [10, 20, 30, 40, 50]
+
+    params = {
+        "n_estimators": n_estimators,
+        "random_state": random_state,
+        "num_leaves": max_depth,
+        "max_depth": max_depth
+    }
+    grid_search = GridSearchCV(lgb.LGBMRegressor(), param_grid=params)
     grid_search.fit(train_data, test_data)
 
     print(grid_search.best_score_)
@@ -159,13 +181,19 @@ x_test = test.drop(["Id"], axis=1)
 
 # GridSearch
 # grid_search_forest(x_train, y_train)
+# grid_search_lightGBM(x_train, y_train)
+
+# モデル作成(LightGBM)
+model = lgb.LGBMRegressor(max_depth=10, n_estimators=200, num_leaves=10, random_state=0)
+model.fit(x_train, y_train)
 
 # 決定木作成
-forest = RandomForestRegressor(max_depth=10, min_samples_split=10, n_estimators=175, random_state=0, n_jobs=2)
-forest.fit(x_train, y_train)
+# forest = RandomForestRegressor(max_depth=10, min_samples_split=10, n_estimators=175, random_state=0, n_jobs=2)
+# forest.fit(x_train, y_train)
 
 # 予測
-predicted_label = forest.predict(x_test)
+# predicted_label = forest.predict(x_test)
+predicted_label = model.predict(x_test)
 
 # print(predicted_label)
 
