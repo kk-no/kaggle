@@ -18,6 +18,9 @@ __pycache__/
 # json
 *.json
 
+# model
+*.h5
+
 # picture
 *.png
 *.jpeg
