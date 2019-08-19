@@ -5,6 +5,8 @@ from keras.callbacks import LearningRateScheduler
 from keras.optimizers import Adam, SGD
 import os
 
+# dogimage demo
+
 # ファイル名取得    
 images = os.listdir("data/all-dogs/all-dogs")
 breeds = os.listdir("data/Annotation/Annotation")
